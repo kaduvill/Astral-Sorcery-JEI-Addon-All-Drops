@@ -1,3 +1,6 @@
+0.3.0
+- a
+
 0.2.0
 - Renamed to Astral Sorcery JEI Addon (All Drops)
 - Added config to disable any category
