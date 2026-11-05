@@ -16,6 +16,11 @@ public final class ASJeiAllDropsConfig {
     @Config.RequiresMcRestart
     public static boolean containmentChalice = true;
 
+    @Config.Name("LiquidStarlightInteractions")
+    @Config.Comment("Show the Liquid Starlight Interactions category. Client restart required.")
+    @Config.RequiresMcRestart
+    public static boolean liquidStarlightInteractions = true;
+
     @Config.Name("StoneEnrichment")
     @Config.Comment("Show the Stone Enrichment category. Client restart required.")
     @Config.RequiresMcRestart

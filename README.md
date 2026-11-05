@@ -2,9 +2,10 @@
 
 A tiny Minecraft 1.12.2 client-side addon for Astral Sorcery 1.10.27 and JEI/HEI 4.x.
 
-It adds categories for (Disabled in config):
+It adds configurable categories for:
 - Mineralis ritual
 - Containment Chalice reactions
+- Liquid Starlight interactions: infused wood, crystal clusters, crystal and tool growth, repair, splitting, and fluid contact
 - Stone Enrichment
 - Trash to Treasure
 - Treasure Shrine ore generator
