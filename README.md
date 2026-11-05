@@ -6,6 +6,7 @@ It adds configurable categories for:
 - Mineralis ritual
 - Containment Chalice reactions
 - Liquid Starlight interactions: infused wood, crystal clusters, crystal and tool growth, repair, splitting, and fluid contact
+- Crystal Cluster Growth: Day, Dusk/Dawn and Night gems, plus Celestial
 - Stone Enrichment
 - Trash to Treasure
 - Treasure Shrine ore generator

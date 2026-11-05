@@ -13,11 +13,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 
 public final class StarlightRecipeCategory implements IRecipeCategory<StarlightRecipeWrapper> {
     public static final String UID = "asjeialldrops.liquid_starlight";
     private final IDrawable background;
+    private final IDrawable icon;
     private final IDrawable slot;
     private final IDrawableStatic arrowBackground;
     private final IDrawableAnimated arrow;
@@ -28,6 +31,8 @@ public final class StarlightRecipeCategory implements IRecipeCategory<StarlightR
 
     StarlightRecipeCategory(IGuiHelper helper) {
         guiHelper = helper;
+        Fluid starlight = FluidRegistry.getFluid("astralsorcery.liquidstarlight");
+        icon = starlight == null ? null : helper.createDrawableIngredient(new FluidStack(starlight, 1000));
         background = helper.createBlankDrawable(StarlightRecipeLayout.WIDTH, StarlightRecipeLayout.HEIGHT);
         slot = helper.getSlotDrawable();
         ResourceLocation texture = new ResourceLocation("jei", "textures/gui/gui_vanilla.png");
@@ -47,6 +52,7 @@ public final class StarlightRecipeCategory implements IRecipeCategory<StarlightR
     @Override public String getTitle() { return I18n.format("jei.asjeialldrops.category.liquid_starlight"); }
     @Override public String getModName() { return I18n.format("jei.asjeialldrops.mod_name"); }
     @Override public IDrawable getBackground() { return background; }
+    @Override public IDrawable getIcon() { return icon; }
 
     @Override public void drawExtras(Minecraft minecraft) {
         arrowBackground.draw(minecraft, StarlightRecipeLayout.ARROW_X, StarlightRecipeLayout.ARROW_Y);

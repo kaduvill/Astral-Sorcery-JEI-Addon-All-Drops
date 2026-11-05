@@ -1,6 +1,7 @@
 package com.kaduvill.asjeialldrops.jei;
 
 import com.kaduvill.asjeialldrops.ore.OrePage;
+import hellfirepvp.astralsorcery.common.block.BlockCustomOre.OreType;
 import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.gui.IDrawable;
 import mezz.jei.api.gui.IDrawableAnimated;
@@ -13,19 +14,28 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
 final class OreTableCategory implements IRecipeCategory<OreTableRecipe> {
     private final OrePage.Kind kind;
     private final OreTableLayout layout;
-    private final IDrawable background, slot;
+    private final IDrawable background, slot, icon;
     private final IDrawableStatic arrowBackground;
     private final IDrawableAnimated arrow;
     private IIngredientRenderer<ItemStack> renderer;
 
     OreTableCategory(IGuiHelper helper, OrePage page) {
         kind = page.kind;
+        ItemStack iconStack;
+        switch (kind) {
+            case ENRICHMENT: iconStack = new ItemStack(Blocks.DIAMOND_ORE); break;
+            case TRASH: iconStack = new ItemStack(Blocks.COBBLESTONE); break;
+            case SHRINE: iconStack = OreType.ROCK_CRYSTAL.asStack(); break;
+            default: throw new IllegalStateException("Unknown ore mechanic");
+        }
+        icon = iconStack.isEmpty() ? null : helper.createDrawableIngredient(iconStack);
         layout = new OreTableLayout(page.table.outputs.size(),
                 kind == OrePage.Kind.ENRICHMENT || kind == OrePage.Kind.TRASH);
         background = helper.createBlankDrawable(OreTableLayout.WIDTH, layout.height);
@@ -40,6 +50,7 @@ final class OreTableCategory implements IRecipeCategory<OreTableRecipe> {
     @Override public String getTitle() { return I18n.format("jei.asjeialldrops.category." + kind.key); }
     @Override public String getModName() { return I18n.format("jei.asjeialldrops.mod_name"); }
     @Override public IDrawable getBackground() { return background; }
+    @Override public IDrawable getIcon() { return icon; }
 
     @Override public void drawExtras(Minecraft minecraft) {
         if (kind == OrePage.Kind.SHRINE) {

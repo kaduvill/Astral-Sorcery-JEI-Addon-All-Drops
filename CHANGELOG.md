@@ -1,5 +1,6 @@
 0.3.0
 - Added Liquid Starlight Interactions: infused wood, crystal clusters, growth, repair, splitting, and fluid contact
+- Added Crystal Cluster Growth and harvesting recipes
 
 0.2.0
 - Renamed to Astral Sorcery JEI Addon (All Drops)

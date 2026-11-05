@@ -21,6 +21,11 @@ public final class ASJeiAllDropsConfig {
     @Config.RequiresMcRestart
     public static boolean liquidStarlightInteractions = true;
 
+    @Config.Name("CrystalClusterGrowth")
+    @Config.Comment("Show the Crystal Cluster Growth category. Client restart required.")
+    @Config.RequiresMcRestart
+    public static boolean crystalClusterGrowth = true;
+
     @Config.Name("StoneEnrichment")
     @Config.Comment("Show the Stone Enrichment category. Client restart required.")
     @Config.RequiresMcRestart
