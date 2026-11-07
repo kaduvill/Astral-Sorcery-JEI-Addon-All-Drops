@@ -26,6 +26,11 @@ public final class ASJeiAllDropsConfig {
     @Config.RequiresMcRestart
     public static boolean crystalClusterGrowth = true;
 
+    @Config.Name("NeromanticPrime")
+    @Config.Comment("Show the Neromantic Prime fluids category. Client restart required.")
+    @Config.RequiresMcRestart
+    public static boolean neromanticPrime = true;
+
     @Config.Name("StoneEnrichment")
     @Config.Comment("Show the Stone Enrichment category. Client restart required.")
     @Config.RequiresMcRestart

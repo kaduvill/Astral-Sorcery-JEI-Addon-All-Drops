@@ -15,4 +15,12 @@ final class JeiFormats {
         }
         return String.format(Locale.ROOT, "%.1f", percentage);
     }
+
+    /** At most one decimal, without presenting a rare outcome as impossible or guaranteed. */
+    static String compactPercentage(double probability) {
+        BigDecimal rounded = BigDecimal.valueOf(probability).movePointRight(2).setScale(1, RoundingMode.HALF_UP);
+        if (probability > 0 && rounded.signum() == 0) return "<0.1";
+        if (probability < 1 && rounded.compareTo(BigDecimal.valueOf(100)) == 0) return ">99.9";
+        return rounded.stripTrailingZeros().toPlainString();
+    }
 }

@@ -1,3 +1,8 @@
+0.4.0
+- Added a Neromantic Prime recipe (Optional Universal Tweaks dimension compatibility)
+- k
+
+
 0.3.0
 - Added Liquid Starlight Interactions: infused wood, crystal clusters, growth, repair, splitting, and fluid contact
 - Added Crystal Cluster Growth and harvesting recipes
