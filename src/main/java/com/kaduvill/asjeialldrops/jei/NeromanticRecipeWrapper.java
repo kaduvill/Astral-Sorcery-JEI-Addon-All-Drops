@@ -190,9 +190,12 @@ public final class NeromanticRecipeWrapper implements IRecipeWrapper {
             infinite |= reserve.infinite;
         }
         List<Hint> alternatives = new ArrayList<>();
+        long maximumFinite = (long) Integer.MAX_VALUE - (data.rules.unlimited ? 1 : 0);
         for (NeromanticProbabilities.Amount amount : NeromanticProbabilities.mergeAmounts(amounts)) {
+            // Simplify the displayed upper bound; keep exact intervals for the model and merging.
+            long displayMaximum = Math.min(amount.maximum + 1, maximumFinite);
             alternatives.add(amount.minimum == amount.maximum ? new Hint("amount", amount.minimum)
-                    : new Hint("amount_range", amount.minimum, amount.maximum));
+                    : new Hint("amount_range", amount.minimum, displayMaximum));
         }
         if (infinite) alternatives.add(new Hint("infinite"));
         return Collections.singletonList(alternatives.isEmpty() ? new Hint("reservoir_empty")
