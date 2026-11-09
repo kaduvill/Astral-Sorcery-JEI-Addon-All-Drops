@@ -4,65 +4,53 @@ import com.kaduvill.asjeialldrops.ASJeiAllDrops;
 import com.kaduvill.asjeialldrops.config.ASJeiAllDropsConfig;
 import com.kaduvill.asjeialldrops.mineralis.AstralMineralisReader;
 import com.kaduvill.asjeialldrops.mineralis.AstralMineralisReader.Snapshot;
-import hellfirepvp.astralsorcery.common.constellation.IWeakConstellation;
-import hellfirepvp.astralsorcery.common.item.crystal.CrystalProperties;
-import hellfirepvp.astralsorcery.common.item.crystal.base.ItemTunedCrystalBase;
 import hellfirepvp.astralsorcery.common.lib.Constellations;
-import hellfirepvp.astralsorcery.common.lib.ItemsAS;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 import mezz.jei.api.IModPlugin;
 import mezz.jei.api.IModRegistry;
 import mezz.jei.api.ISubtypeRegistry;
 import mezz.jei.api.JEIPlugin;
+import mezz.jei.api.ingredients.IIngredientHelper;
+import mezz.jei.api.ingredients.VanillaTypes;
 import mezz.jei.api.recipe.IRecipeCategoryRegistration;
-import net.minecraft.item.Item;
+import mezz.jei.api.recipe.IRecipeWrapper;
 import net.minecraft.item.ItemStack;
 
 @JEIPlugin
 public final class MineralisJeiPlugin implements IModPlugin {
     private Snapshot snapshot;
+    private RitualInfoRecipeWrapper corruptedRecipe;
 
     @Override
     public void registerItemSubtypes(ISubtypeRegistry registry) {
         if (!ASJeiAllDropsConfig.mineralis) return;
-        for (ItemTunedCrystalBase item : new ItemTunedCrystalBase[]{
-                ItemsAS.tunedCelestialCrystal, ItemsAS.tunedRockCrystal}) {
-            if (item == null || registry.hasSubtypeInterpreter(new ItemStack(item))) continue;
-            registry.registerSubtypeInterpreter(item, stack -> {
-                // AS's getter can create missing NBT; inspect a copy to keep JEI's stacks unchanged.
-                IWeakConstellation constellation = ItemTunedCrystalBase.getMainConstellation(stack.copy());
-                return constellation == null ? ISubtypeRegistry.ISubtypeInterpreter.NONE
-                        : constellation.getUnlocalizedName();
-            });
-        }
+        RitualItems.registerSubtypes(registry);
     }
 
     @Override
     public void registerCategories(IRecipeCategoryRegistration registry) {
         snapshot = null;
+        corruptedRecipe = null;
         if (!ASJeiAllDropsConfig.mineralis) return;
         snapshot = readSafely();
-        registry.addRecipeCategories(new MineralisRecipeCategory(registry.getJeiHelpers().getGuiHelper(),
-                snapshot.getInputs().size(), snapshot.getDrops().size()));
+        if (ASJeiAllDropsConfig.mineralisCorrupted && snapshot.getSearchRange() > 0)
+            corruptedRecipe = new RitualInfoRecipeWrapper(snapshot.getSearchRange(), "mineralis");
+        MineralisRecipeCategory category = new MineralisRecipeCategory(registry.getJeiHelpers().getGuiHelper(),
+                snapshot.getInputs().size(), snapshot.getDrops().size(),
+                corruptedRecipe == null ? 0 : corruptedRecipe.height());
+        registry.addRecipeCategories(category);
     }
 
     @Override
     public void register(IModRegistry registry) {
         if (snapshot == null) return;
-        MineralisRecipeWrapper recipe = wrap(snapshot);
-        if (recipe != null) registry.addRecipes(Collections.singletonList(recipe), MineralisRecipeCategory.UID);
-        Item pedestal = Item.getByNameOrId("astralsorcery:blockritualpedestal");
-        if (pedestal != null) registry.addRecipeCatalyst(new ItemStack(pedestal), MineralisRecipeCategory.UID);
-        addCrystalCatalyst(registry, ItemsAS.tunedCelestialCrystal, CrystalProperties.getMaxCelestialProperties());
-        addCrystalCatalyst(registry, ItemsAS.tunedRockCrystal, CrystalProperties.getMaxRockProperties());
-    }
-
-    private static void addCrystalCatalyst(IModRegistry registry, ItemTunedCrystalBase item, CrystalProperties properties) {
-        if (item == null || Constellations.mineralis == null) return;
-        ItemStack crystal = new ItemStack(item);
-        CrystalProperties.applyCrystalProperties(crystal, properties);
-        ItemTunedCrystalBase.applyMainConstellation(crystal, Constellations.mineralis);
-        registry.addRecipeCatalyst(crystal, MineralisRecipeCategory.UID);
+        List<IRecipeWrapper> recipes = new ArrayList<>();
+        MineralisRecipeWrapper recipe = wrap(snapshot, registry.getIngredientRegistry().getIngredientHelper(VanillaTypes.ITEM));
+        if (recipe != null) recipes.add(recipe);
+        if (corruptedRecipe != null) recipes.add(corruptedRecipe);
+        registry.addRecipes(recipes, MineralisRecipeCategory.UID);
+        RitualItems.catalysts(registry, MineralisRecipeCategory.UID, Constellations.mineralis);
     }
 
     private static Snapshot readSafely() {
@@ -74,9 +62,9 @@ public final class MineralisJeiPlugin implements IModPlugin {
         }
     }
 
-    private static MineralisRecipeWrapper wrap(Snapshot snapshot) {
+    private static MineralisRecipeWrapper wrap(Snapshot snapshot, IIngredientHelper<ItemStack> ingredientHelper) {
         return snapshot.getDrops().isEmpty() ? null
                 : new MineralisRecipeWrapper(snapshot.getInputs(), snapshot.getDrops(),
-                        snapshot.getNoResultProbability(), snapshot.getSearchRange());
+                        snapshot.getNoResultProbability(), snapshot.getSearchRange(), ingredientHelper);
     }
 }

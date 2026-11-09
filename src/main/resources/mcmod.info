@@ -2,7 +2,7 @@
   {
     "modid": "asjeialldrops",
     "name": "Astral Sorcery JEI Addon (All Drops)",
-    "description": "Adds JEI pages for Mineralis, perk ore outputs, Treasure Shrines, Containment Chalice reactions, Liquid Starlight interactions and Crystal Cluster Growth.",
+    "description": "Adds missing JEI pages for Astral Sorcery",
     "version": "${version}",
     "mcversion": "${mcversion}",
     "authorList": ["kaduvill"],

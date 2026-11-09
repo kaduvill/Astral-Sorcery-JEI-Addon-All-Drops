@@ -142,7 +142,6 @@ public final class ChaliceRecipes {
         public final boolean validWeights;
         public final double otherProbability;
         private final int[] commonAmounts = new int[2];
-        private final double[] commonConsumption = new double[2];
 
         private Recipe(List<Reaction> pool, float range) {
             this.range = range;
@@ -175,14 +174,11 @@ public final class ChaliceRecipes {
             this.selections = Collections.unmodifiableList(selectable.isEmpty() ? new ArrayList<>(pool) : selectable);
             for (int i = 0; i < 2; i++) {
                 int amount = i == 0 ? selections.get(0).first.amount : selections.get(0).second.amount;
-                double consumption = selections.get(0).getConsumption(i);
                 for (Reaction reaction : selections) {
                     int required = i == 0 ? reaction.first.amount : reaction.second.amount;
                     if (required != amount) commonAmounts[i] = -1;
-                    if (Double.compare(consumption, reaction.getConsumption(i)) != 0) consumption = Double.NaN;
                 }
                 if (commonAmounts[i] != -1) commonAmounts[i] = amount;
-                commonConsumption[i] = consumption;
             }
             this.otherProbability = other;
             List<Outcome> outputs = new ArrayList<>(grouped.size());
@@ -204,11 +200,6 @@ public final class ChaliceRecipes {
         /** -1 means the amount depends on the selected outcome. */
         public int getCommonAmount(int index) {
             return commonAmounts[index];
-        }
-
-        /** NaN means variable or unavailable, never an assumed 100% drain. */
-        public double getCommonConsumption(int index) {
-            return commonConsumption[index];
         }
 
         @Override

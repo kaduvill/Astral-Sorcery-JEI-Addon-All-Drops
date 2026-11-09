@@ -1,7 +1,10 @@
 0.4.0
 - Added a Neromantic Prime recipe (Optional Universal Tweaks dimension compatibility)
-- k
-
+- Corrupted Mineralis ritual
+- Pelotrio ritual (+ corrupted )
+- Octans ritual (+ corrupted )
+- Bootes ritual (+ corrupted )
+- Added separate config switches for each corrupted ritual's JEI pages
 
 0.3.0
 - Added Liquid Starlight Interactions: infused wood, crystal clusters, growth, repair, splitting, and fluid contact

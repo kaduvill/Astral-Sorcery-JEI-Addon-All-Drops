@@ -6,8 +6,11 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import mezz.jei.api.gui.IGuiItemStackGroup;
+import mezz.jei.api.ingredients.IIngredientHelper;
+import mezz.jei.api.ingredients.IIngredientRenderer;
 import mezz.jei.api.ingredients.IIngredients;
 import mezz.jei.api.ingredients.VanillaTypes;
+import mezz.jei.api.recipe.IFocus;
 import mezz.jei.api.recipe.IRecipeWrapper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -16,6 +19,7 @@ import net.minecraft.item.ItemStack;
 
 public final class MineralisRecipeWrapper implements IRecipeWrapper {
     private static final int HIDDEN_POSITION = -10000;
+    private static final IIngredientRenderer<ItemStack> HIDDEN_RENDERER = (minecraft, x, y, stack) -> { };
     private static final int PAGE_BUTTON_WIDTH = 18;
     private static final int LEFT_PAGE_X = 0;
     private static final int RIGHT_PAGE_X = MineralisRecipeLayout.WIDTH - PAGE_BUTTON_WIDTH;
@@ -23,16 +27,20 @@ public final class MineralisRecipeWrapper implements IRecipeWrapper {
     private final List<MineralisDrop> drops;
     private final double noResultProbability;
     private final int searchRange;
+    private final IIngredientHelper<ItemStack> ingredientHelper;
     private IGuiItemStackGroup itemStacks;
     private int page;
     private MineralisRecipeLayout layout;
+    private MineralisRecipeCategory category;
 
     public MineralisRecipeWrapper(List<MineralisInput> inputs, List<MineralisDrop> drops,
-                                  double noResultProbability, int searchRange) {
+                                  double noResultProbability, int searchRange,
+                                  IIngredientHelper<ItemStack> ingredientHelper) {
         this.inputs = Collections.unmodifiableList(new ArrayList<>(inputs));
         this.drops = Collections.unmodifiableList(new ArrayList<>(drops));
         this.noResultProbability = noResultProbability;
         this.searchRange = searchRange;
+        this.ingredientHelper = ingredientHelper;
     }
 
     public List<MineralisDrop> getDrops() {
@@ -57,9 +65,8 @@ public final class MineralisRecipeWrapper implements IRecipeWrapper {
     @Override
     public void drawInfo(Minecraft minecraft, int recipeWidth, int recipeHeight, int mouseX, int mouseY) {
         if (layout == null) return;
+        category.drawGrid(minecraft);
         FontRenderer font = minecraft.fontRenderer;
-        String text = I18n.format("jei.asjeialldrops.range", searchRange);
-        font.drawString(text, (recipeWidth - font.getStringWidth(text)) / 2, layout.infoY + 1, 0x404040);
 
         int pageCount = getPageCount();
         if (pageCount < 2) return;
@@ -74,19 +81,10 @@ public final class MineralisRecipeWrapper implements IRecipeWrapper {
 
     @Override
     public List<String> getTooltipStrings(int mouseX, int mouseY) {
-        if (layout == null || mouseX < 0 || mouseX >= MineralisRecipeLayout.WIDTH
-                || mouseY < layout.infoY || mouseY >= layout.infoY + MineralisRecipeLayout.INFO_HEIGHT) {
-            return Collections.emptyList();
-        }
-        List<String> tooltip = new ArrayList<>();
-        int boxSize = searchRange * 2 + 1;
-        tooltip.add(I18n.format("jei.asjeialldrops.range_box", boxSize, boxSize, boxSize));
-        tooltip.add(I18n.format("jei.asjeialldrops.range_modifiers"));
-        if (noResultProbability * 100.0 >= 0.05) {
-            tooltip.add(I18n.format("jei.asjeialldrops.no_conversion",
-                    MineralisRecipeCategory.formatPercentage(noResultProbability)));
-        }
-        return tooltip;
+        if (layout == null || layout.inputCount == 0
+                || mouseX < MineralisRecipeLayout.ARROW_X || mouseX >= MineralisRecipeLayout.ARROW_X + 17
+                || mouseY < layout.arrowY || mouseY >= layout.arrowY + 24) return Collections.emptyList();
+        return RitualRecipeWrapper.rangeTooltip(searchRange, searchRange * 2 + 1);
     }
 
     @Override
@@ -105,9 +103,25 @@ public final class MineralisRecipeWrapper implements IRecipeWrapper {
         return false;
     }
 
-    void bindLayout(IGuiItemStackGroup itemStacks, MineralisRecipeLayout layout) {
+    void bindLayout(IGuiItemStackGroup itemStacks, MineralisRecipeLayout layout, MineralisRecipeCategory category,
+                    IFocus<?> focus) {
         this.itemStacks = itemStacks;
         this.layout = layout;
+        this.category = category;
+        ItemStack focused = focus != null && focus.getMode() == IFocus.Mode.OUTPUT
+                && focus.getValue() instanceof ItemStack ? (ItemStack) focus.getValue() : ItemStack.EMPTY;
+        if (!focused.isEmpty()) {
+            String focusId = ingredientHelper.getUniqueId(focused);
+            String wildcardId = ingredientHelper.getWildcardId(focused);
+            int match = -1;
+            for (int index = 0; index < drops.size(); index++) {
+                String outputId = ingredientHelper.getUniqueId(drops.get(index).getStack());
+                // JEI checks the exact identity before its wildcard fallback.
+                if (outputId.equals(focusId)) { match = index; break; }
+                if (match < 0 && outputId.equals(wildcardId)) match = index;
+            }
+            if (match >= 0) page = match / layout.pageSize;
+        }
         this.page = Math.max(0, Math.min(page, getPageCount() - 1));
         for (int index = 0; index < inputs.size(); index++) {
             itemStacks.init(index, true, layout.inputX(index), layout.inputY(index));
@@ -118,6 +132,12 @@ public final class MineralisRecipeWrapper implements IRecipeWrapper {
         for (int index = 0; index < drops.size(); index++) {
             initSlot(index, index >= firstVisible && index < lastVisible ? index - firstVisible : -1);
         }
+    }
+
+    void addInputTooltip(List<String> tooltip) {
+        if (noResultProbability * 100.0 >= 0.05)
+            tooltip.add(I18n.format("jei.asjeialldrops.no_conversion",
+                    MineralisRecipeCategory.formatPercentage(noResultProbability)));
     }
 
     private void setPage(int newPage) {
@@ -135,15 +155,11 @@ public final class MineralisRecipeWrapper implements IRecipeWrapper {
     }
 
     private void initSlot(int index, int visibleIndex) {
-        int x = HIDDEN_POSITION;
-        int y = HIDDEN_POSITION;
-        if (visibleIndex >= 0) {
-            x = layout.outputX(visibleIndex);
-            y = layout.outputY(visibleIndex);
-        }
         // Each concrete drop stays in its own output slot, even when its page is hidden.
         int slotIndex = inputs.size() + index;
-        itemStacks.init(slotIndex, false, x, y);
+        if (visibleIndex < 0)
+            itemStacks.init(slotIndex, false, HIDDEN_RENDERER, HIDDEN_POSITION, HIDDEN_POSITION, 18, 18, 1, 1);
+        else itemStacks.init(slotIndex, false, layout.outputX(visibleIndex), layout.outputY(visibleIndex));
         itemStacks.set(slotIndex, drops.get(index).getStack());
     }
 

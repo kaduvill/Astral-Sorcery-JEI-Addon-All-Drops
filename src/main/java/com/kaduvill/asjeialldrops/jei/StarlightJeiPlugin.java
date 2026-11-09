@@ -4,9 +4,6 @@ import com.kaduvill.asjeialldrops.ASJeiAllDrops;
 import com.kaduvill.asjeialldrops.config.ASJeiAllDropsConfig;
 import com.kaduvill.asjeialldrops.fluid.AstralStarlightReader;
 import com.kaduvill.asjeialldrops.fluid.StarlightRecipes;
-import hellfirepvp.astralsorcery.common.constellation.IWeakConstellation;
-import hellfirepvp.astralsorcery.common.item.crystal.base.ItemTunedCrystalBase;
-import hellfirepvp.astralsorcery.common.lib.ItemsAS;
 import java.util.ArrayList;
 import java.util.List;
 import mezz.jei.api.IModPlugin;
@@ -26,15 +23,7 @@ public final class StarlightJeiPlugin implements IModPlugin {
     @Override
     public void registerItemSubtypes(ISubtypeRegistry registry) {
         if (!ASJeiAllDropsConfig.liquidStarlightInteractions) return;
-        for (ItemTunedCrystalBase item : new ItemTunedCrystalBase[]{
-                ItemsAS.tunedCelestialCrystal, ItemsAS.tunedRockCrystal}) {
-            if (item == null || registry.hasSubtypeInterpreter(new ItemStack(item))) continue;
-            registry.registerSubtypeInterpreter(item, stack -> {
-                IWeakConstellation constellation = ItemTunedCrystalBase.getMainConstellation(stack.copy());
-                return constellation == null ? ISubtypeRegistry.ISubtypeInterpreter.NONE
-                        : constellation.getUnlocalizedName();
-            });
-        }
+        RitualItems.registerSubtypes(registry);
     }
 
     @Override

@@ -3,7 +3,10 @@
 A tiny Minecraft 1.12.2 client-side addon for Astral Sorcery 1.10.27 and JEI/HEI 4.x.
 
 It adds configurable categories for:
-- Mineralis ritual
+- Mineralis ritual + corrupted
+- Pelotrio ritual + corrupted
+- Octans ritual + corrupted
+- Bootes ritual + corrupted
 - Neromantic Prime fluids (Universal Tweaks optional)
 - Containment Chalice reactions
 - Liquid Starlight interactions: infused wood, crystal clusters, crystal and tool growth, repair, splitting, and fluid contact
