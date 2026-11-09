@@ -3,6 +3,11 @@ package com.kaduvill.asjeialldrops.jei;
 import com.kaduvill.asjeialldrops.ASJeiAllDrops;
 import com.kaduvill.asjeialldrops.config.ASJeiAllDropsConfig;
 import com.kaduvill.asjeialldrops.ritual.AstralRitualReader;
+import com.kaduvill.asjeialldrops.ritual.AstralRitualEffectReader;
+import com.kaduvill.asjeialldrops.ritual.AstralEvorsioReader;
+import com.kaduvill.asjeialldrops.ritual.AstralFornaxReader;
+import com.kaduvill.asjeialldrops.ritual.FornaxRecipes;
+import com.kaduvill.asjeialldrops.ritual.RitualEffects;
 import com.kaduvill.asjeialldrops.ritual.RitualRecipes;
 import com.kaduvill.asjeialldrops.ritual.VanillaFishingReader;
 import com.kaduvill.asjeialldrops.ritual.FishingLootReader;
@@ -21,20 +26,29 @@ import mezz.jei.api.ISubtypeRegistry;
 import mezz.jei.api.JEIPlugin;
 import mezz.jei.api.ingredients.VanillaTypes;
 import mezz.jei.api.recipe.IRecipeCategoryRegistration;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTException;
 
 /** Snapshots loaded AS settings once per JEI registration, with independent category failures. */
 @JEIPlugin
 public final class RitualJeiPlugin implements IModPlugin {
     private final Map<RitualRecipeCategory, List<RitualRecipeWrapper>> recipes = new LinkedHashMap<>();
+    private FornaxRecipes.Snapshot fornax;
+    private final List<FornaxRecipeWrapper> fornaxPages = new ArrayList<>();
 
     @Override public void registerItemSubtypes(ISubtypeRegistry registry) {
-        if (ASJeiAllDropsConfig.pelotrio || ASJeiAllDropsConfig.octans || ASJeiAllDropsConfig.bootes)
+        if (ASJeiAllDropsConfig.pelotrio || ASJeiAllDropsConfig.octans || ASJeiAllDropsConfig.bootes
+                || ASJeiAllDropsConfig.fornax || ASJeiAllDropsConfig.evorsio
+                || ASJeiAllDropsConfig.aevitas || ASJeiAllDropsConfig.armara
+                || ASJeiAllDropsConfig.discidia || ASJeiAllDropsConfig.horologium
+                || ASJeiAllDropsConfig.lucerna || ASJeiAllDropsConfig.vicio)
             RitualItems.registerSubtypes(registry);
     }
 
     @Override public void registerCategories(IRecipeCategoryRegistration registry) {
         recipes.clear();
+        fornax = null;
+        fornaxPages.clear();
         IGuiHelper helper = registry.getJeiHelpers().getGuiHelper();
         AstralRitualReader reader = new AstralRitualReader();
         if (ASJeiAllDropsConfig.pelotrio) try {
@@ -48,7 +62,7 @@ public final class RitualJeiPlugin implements IModPlugin {
                         MobRitualRecipeWrapper.Mode.NIGHT, snapshot.night, false));
                 for (RitualRecipes.Conversion conversion : snapshot.conversions)
                     pages.add(new MobRitualRecipeWrapper(faces, snapshot, conversion));
-                add(registry, helper, "pelotrio", pages);
+                add(registry, helper, "pelotrio", Constellations.pelotrio, pages);
             }
         } catch (ReflectiveOperationException | RuntimeException | LinkageError failure) {
             failed("Pelotrio", failure);
@@ -76,7 +90,7 @@ public final class RitualJeiPlugin implements IModPlugin {
                 pages.add(fishing);
                 if (ASJeiAllDropsConfig.octansCorrupted)
                     pages.add(new RitualInfoRecipeWrapper(snapshot.range, "octans"));
-                add(registry, helper, "octans", pages);
+                add(registry, helper, "octans", Constellations.octans, pages);
             }
         } catch (RuntimeException | LinkageError failure) {
             failed("Octans", failure);
@@ -91,18 +105,73 @@ public final class RitualJeiPlugin implements IModPlugin {
                 if (ASJeiAllDropsConfig.bootesCorrupted)
                     pages.add(new MobRitualRecipeWrapper(faces, snapshot, MobRitualRecipeWrapper.Mode.HERDING,
                             snapshot.animals, true));
-                add(registry, helper, "bootes", pages);
+                add(registry, helper, "bootes", Constellations.bootes, pages);
             }
         } catch (ReflectiveOperationException | RuntimeException | LinkageError failure) {
             failed("Bootes", failure);
         }
+        if (ASJeiAllDropsConfig.fornax) try {
+            fornax = new AstralFornaxReader().read(ASJeiAllDropsConfig.fornaxCorrupted);
+            if (fornax != null) {
+                for (FornaxRecipes.Recipe recipe : fornax.recipes)
+                    fornaxPages.add(new FornaxRecipeWrapper(fornax, recipe));
+                add(registry, helper, "fornax", Constellations.fornax, new ArrayList<>(fornaxPages));
+            }
+        } catch (RuntimeException | LinkageError failure) {
+            failed("Fornax", failure);
+        }
+        AstralRitualEffectReader effects = new AstralRitualEffectReader();
+        if (ASJeiAllDropsConfig.evorsio) try {
+            RitualEffects.Snapshot snapshot = effects.read("evorsio");
+            if (snapshot != null) {
+                List<RitualRecipeWrapper> pages = new ArrayList<>();
+                pages.add(new RitualInfoRecipeWrapper(snapshot, false));
+                if (ASJeiAllDropsConfig.evorsioCorrupted) try {
+                    AstralEvorsioReader.Snapshot corrupted = new AstralEvorsioReader().read();
+                    if (corrupted != null) pages.add(new EvorsioRecipeWrapper(corrupted));
+                } catch (ReflectiveOperationException | RuntimeException | LinkageError failure) {
+                    failed("Corrupted Evorsio", failure);
+                }
+                add(registry, helper, "evorsio", Constellations.evorsio, pages);
+            }
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError failure) {
+            failed("Evorsio", failure);
+        }
+        addEffect(registry, helper, effects, "aevitas", Constellations.aevitas,
+                ASJeiAllDropsConfig.aevitas, ASJeiAllDropsConfig.aevitasCorrupted);
+        addEffect(registry, helper, effects, "armara", Constellations.armara,
+                ASJeiAllDropsConfig.armara, ASJeiAllDropsConfig.armaraCorrupted);
+        addEffect(registry, helper, effects, "discidia", Constellations.discidia,
+                ASJeiAllDropsConfig.discidia, ASJeiAllDropsConfig.discidiaCorrupted);
+        addEffect(registry, helper, effects, "horologium", Constellations.horologium,
+                ASJeiAllDropsConfig.horologium, ASJeiAllDropsConfig.horologiumCorrupted);
+        addEffect(registry, helper, effects, "lucerna", Constellations.lucerna,
+                ASJeiAllDropsConfig.lucerna, ASJeiAllDropsConfig.lucernaCorrupted);
+        addEffect(registry, helper, effects, "vicio", Constellations.vicio,
+                ASJeiAllDropsConfig.vicio, ASJeiAllDropsConfig.vicioCorrupted);
     }
 
-    private void add(IRecipeCategoryRegistration registry, IGuiHelper helper, String key, List<RitualRecipeWrapper> pages) {
+    private void addEffect(IRecipeCategoryRegistration registry, IGuiHelper helper, AstralRitualEffectReader reader,
+                           String key, IWeakConstellation constellation, boolean enabled, boolean corrupted) {
+        if (!enabled) return;
+        try {
+            RitualEffects.Snapshot snapshot = reader.read(key);
+            if (snapshot == null) return;
+            List<RitualRecipeWrapper> pages = new ArrayList<>();
+            pages.add(new RitualInfoRecipeWrapper(snapshot, false));
+            if (corrupted) pages.add(new RitualInfoRecipeWrapper(snapshot, true));
+            add(registry, helper, key, constellation, pages);
+        } catch (ReflectiveOperationException | RuntimeException | LinkageError failure) {
+            failed(key, failure);
+        }
+    }
+
+    private void add(IRecipeCategoryRegistration registry, IGuiHelper helper, String key,
+                     IWeakConstellation constellation, List<RitualRecipeWrapper> pages) {
         if (pages.isEmpty()) return;
         int height = 0;
         for (RitualRecipeWrapper page : pages) height = Math.max(height, page.height());
-        RitualRecipeCategory category = new RitualRecipeCategory(helper, key, height);
+        RitualRecipeCategory category = new RitualRecipeCategory(helper, key, constellation, height);
         recipes.put(category, Collections.unmodifiableList(new ArrayList<>(pages)));
         registry.addRecipeCategories(category);
     }
@@ -111,15 +180,20 @@ public final class RitualJeiPlugin implements IModPlugin {
         for (Map.Entry<RitualRecipeCategory, List<RitualRecipeWrapper>> entry : recipes.entrySet()) {
             RitualRecipeCategory category = entry.getKey();
             category.itemRenderer = registry.getIngredientRegistry().getIngredientRenderer(VanillaTypes.ITEM);
-            registry.addRecipes(entry.getValue(), category.getUid());
-            IWeakConstellation constellation = category.getUid().endsWith("pelotrio") ? Constellations.pelotrio
-                    : category.getUid().endsWith("octans") ? Constellations.octans : Constellations.bootes;
-            RitualItems.catalysts(registry, category.getUid(), constellation);
+            category.itemHelper = registry.getIngredientRegistry().getIngredientHelper(VanillaTypes.ITEM);
+            IWeakConstellation constellation = category.constellation;
+            List<ItemStack> catalysts = RitualItems.catalysts(registry, category.getUid(), constellation);
+            if (constellation == Constellations.fornax) {
+                // One provider owns both normal browsing and native, precedence-aware focus lookup.
+                registry.addRecipeRegistryPlugin(new FornaxRecipeLookup(fornax, fornaxPages,
+                        registry.getJeiHelpers().getStackHelper(), catalysts));
+            } else if (constellation == Constellations.octans) {
+                for (RitualRecipeWrapper page : entry.getValue()) if (page instanceof FishingRecipeWrapper)
+                    registry.addRecipeRegistryPlugin(new FishingRecipeLookup((FishingRecipeWrapper) page,
+                            entry.getValue(), category.itemHelper, catalysts));
+            } else registry.addRecipes(entry.getValue(), category.getUid());
             if (constellation == Constellations.pelotrio || constellation == Constellations.bootes)
                 registry.addRecipeRegistryPlugin(new MobRitualRecipeLookup(category.getUid(), entry.getValue()));
-            for (RitualRecipeWrapper page : entry.getValue()) if (page instanceof FishingRecipeWrapper)
-                registry.addRecipeRegistryPlugin(new FishingRecipeLookup((FishingRecipeWrapper) page,
-                        registry.getIngredientRegistry().getIngredientHelper(VanillaTypes.ITEM)));
         }
     }
 

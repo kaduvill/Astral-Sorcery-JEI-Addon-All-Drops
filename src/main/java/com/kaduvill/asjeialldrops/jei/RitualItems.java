@@ -43,10 +43,13 @@ final class RitualItems {
         return result;
     }
 
-    static void catalysts(IModRegistry registry, String uid, IWeakConstellation constellation) {
+    static List<ItemStack> catalysts(IModRegistry registry, String uid, IWeakConstellation constellation) {
+        List<ItemStack> catalysts = new ArrayList<>();
         ItemStack pedestal = pedestal();
-        if (!pedestal.isEmpty()) registry.addRecipeCatalyst(pedestal, uid);
-        for (ItemStack crystal : crystals(constellation)) registry.addRecipeCatalyst(crystal, uid);
+        if (!pedestal.isEmpty()) catalysts.add(pedestal);
+        catalysts.addAll(crystals(constellation));
+        for (ItemStack catalyst : catalysts) registry.addRecipeCatalyst(catalyst, uid);
+        return catalysts;
     }
 
     static ItemStack pedestal() {

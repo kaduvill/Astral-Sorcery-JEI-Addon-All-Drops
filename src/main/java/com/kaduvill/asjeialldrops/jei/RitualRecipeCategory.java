@@ -1,11 +1,13 @@
 package com.kaduvill.asjeialldrops.jei;
 
+import hellfirepvp.astralsorcery.common.constellation.IWeakConstellation;
 import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.gui.IDrawable;
 import mezz.jei.api.gui.IDrawableAnimated;
 import mezz.jei.api.gui.IDrawableStatic;
 import mezz.jei.api.gui.IRecipeLayout;
 import mezz.jei.api.ingredients.IIngredientRenderer;
+import mezz.jei.api.ingredients.IIngredientHelper;
 import mezz.jei.api.ingredients.IIngredients;
 import mezz.jei.api.recipe.IRecipeCategory;
 import net.minecraft.client.Minecraft;
@@ -18,15 +20,18 @@ import net.minecraft.util.ResourceLocation;
 public final class RitualRecipeCategory implements IRecipeCategory<RitualRecipeWrapper> {
     static final int WIDTH = 162;
     private final String key;
+    final IWeakConstellation constellation;
     private final IDrawable background;
     private final IDrawable icon;
     final IDrawable slot;
     private final IDrawableStatic emptyArrow;
     private final IDrawableAnimated arrow;
     IIngredientRenderer<ItemStack> itemRenderer;
+    IIngredientHelper<ItemStack> itemHelper;
 
-    RitualRecipeCategory(IGuiHelper helper, String key, int height) {
+    RitualRecipeCategory(IGuiHelper helper, String key, IWeakConstellation constellation, int height) {
         this.key = key;
+        this.constellation = constellation;
         background = helper.createBlankDrawable(WIDTH, height);
         ItemStack pedestal = RitualItems.pedestal();
         icon = pedestal.isEmpty() ? null : helper.createDrawableIngredient(pedestal);

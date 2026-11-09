@@ -1,55 +1,61 @@
 package com.kaduvill.asjeialldrops.jei;
 
+import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import mezz.jei.api.ingredients.IIngredientHelper;
 import mezz.jei.api.recipe.IFocus;
 import mezz.jei.api.recipe.IRecipeCategory;
 import mezz.jei.api.recipe.IRecipeRegistryPlugin;
 import mezz.jei.api.recipe.IRecipeWrapper;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.fluids.FluidRegistry;
+import net.minecraftforge.fluids.FluidStack;
 
-/** Fallback aliases for random variants missing from JEI's normal output index. */
+/** Sole Octans provider, avoiding native exact/wildcard duplicate pages. */
 final class FishingRecipeLookup implements IRecipeRegistryPlugin {
     private static final String UID = "asjeialldrops.octans";
     private final FishingRecipeWrapper recipe;
+    private final List<RitualRecipeWrapper> pages;
     private final IIngredientHelper<ItemStack> ingredientHelper;
-    private final Set<String> indexedOutputs = new HashSet<>();
+    private final List<ItemStack> catalysts = new ArrayList<>();
 
-    FishingRecipeLookup(FishingRecipeWrapper recipe, IIngredientHelper<ItemStack> ingredientHelper) {
+    FishingRecipeLookup(FishingRecipeWrapper recipe, List<RitualRecipeWrapper> pages,
+                        IIngredientHelper<ItemStack> ingredientHelper, List<ItemStack> catalysts) {
         this.recipe = recipe;
+        this.pages = Collections.unmodifiableList(new ArrayList<>(pages));
         this.ingredientHelper = ingredientHelper;
-        for (List<ItemStack> outputs : recipe.outputLists()) {
-            for (ItemStack output : ingredientHelper.expandSubtypes(outputs)) {
-                if (output != null && !output.isEmpty()) indexedOutputs.add(ingredientHelper.getUniqueId(output));
-            }
-        }
+        for (ItemStack catalyst : catalysts) if (!catalyst.isEmpty()) this.catalysts.add(catalyst.copy());
+        recipe.indexOutputs(ingredientHelper);
     }
 
-    private boolean matches(IFocus<?> focus) {
-        if (focus == null || focus.getMode() != IFocus.Mode.OUTPUT || !(focus.getValue() instanceof ItemStack))
-            return false;
-        ItemStack stack = (ItemStack) focus.getValue();
-        return !stack.isEmpty()
-                && !indexedOutputs.contains(ingredientHelper.getUniqueId(stack))
-                && !indexedOutputs.contains(ingredientHelper.getWildcardId(stack))
-                && recipe.findOutput(stack) >= 0;
+    private List<RitualRecipeWrapper> find(IFocus<?> focus) {
+        if (focus == null) return Collections.emptyList();
+        if (focus.getValue() instanceof ItemStack) {
+            ItemStack stack = (ItemStack) focus.getValue();
+            if (stack.isEmpty()) return Collections.emptyList();
+            if (focus.getMode() == IFocus.Mode.INPUT && ingredientHelper.getMatch(catalysts, stack) != null)
+                return pages;
+            if (focus.getMode() == IFocus.Mode.OUTPUT && recipe.findOutput(stack) >= 0)
+                return Collections.singletonList(recipe);
+        } else if (focus.getMode() == IFocus.Mode.INPUT && focus.getValue() instanceof FluidStack
+                && ((FluidStack) focus.getValue()).getFluid() == FluidRegistry.WATER) {
+            return Collections.singletonList(recipe);
+        }
+        return Collections.emptyList();
     }
 
     @Override public <V> List<String> getRecipeCategoryUids(IFocus<V> focus) {
-        return matches(focus) ? Collections.singletonList(UID) : Collections.emptyList();
+        return find(focus).isEmpty() ? Collections.emptyList() : Collections.singletonList(UID);
     }
 
     @Override @SuppressWarnings("unchecked")
     public <T extends IRecipeWrapper, V> List<T> getRecipeWrappers(IRecipeCategory<T> category, IFocus<V> focus) {
-        return UID.equals(category.getUid()) && matches(focus)
-                ? (List<T>) (List<?>) Collections.singletonList(recipe) : Collections.emptyList();
+        return UID.equals(category.getUid()) ? (List<T>) (List<?>) find(focus) : Collections.emptyList();
     }
 
-    @Override public <T extends IRecipeWrapper> List<T> getRecipeWrappers(IRecipeCategory<T> category) {
-        // Normal registration owns the unfiltered list, including the corrupted explanation.
-        return Collections.emptyList();
+    @Override @SuppressWarnings("unchecked")
+    public <T extends IRecipeWrapper> List<T> getRecipeWrappers(IRecipeCategory<T> category) {
+        return UID.equals(category.getUid()) ? (List<T>) (List<?>) pages : Collections.emptyList();
     }
 }
