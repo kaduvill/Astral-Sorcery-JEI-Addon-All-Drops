@@ -1,6 +1,7 @@
 package com.kaduvill.asjeialldrops.jei;
 
 import com.kaduvill.asjeialldrops.mineralis.MineralisDrop;
+import hellfirepvp.astralsorcery.common.lib.Constellations;
 import java.util.List;
 import mezz.jei.api.IGuiHelper;
 import mezz.jei.api.gui.IDrawable;
@@ -31,7 +32,7 @@ public final class MineralisRecipeCategory implements IRecipeCategory<IRecipeWra
         this.arrowBackground = guiHelper.createDrawable(texture, 24, 132, 24, 17);
         IDrawableStatic arrowFill = guiHelper.createDrawable(texture, 82, 128, 24, 17);
         this.arrow = guiHelper.createAnimatedDrawable(arrowFill, 200, IDrawableAnimated.StartDirection.LEFT, false);
-        infoCategory = new RitualRecipeCategory(guiHelper, "mineralis", infoHeight);
+        infoCategory = new RitualRecipeCategory(guiHelper, "mineralis", Constellations.mineralis, infoHeight);
         layout = new MineralisRecipeLayout(inputCount, maxDrops);
         background = guiHelper.createBlankDrawable(MineralisRecipeLayout.WIDTH,
                 Math.max(layout.height, infoCategory.getBackground().getHeight()));

@@ -28,6 +28,20 @@ public final class AstralOreTableReader {
     public AstralOreTableReader() throws ReflectiveOperationException {}
 
     public OreTable read(String registryName, boolean placedBlocks) throws ReflectiveOperationException {
+        return read(registryName, placedBlocks, false);
+    }
+
+    /** Evorsio chooses configured rows uniformly, including rows whose weight is zero. */
+    public OreTable readUniform(String registryName, boolean placedBlocks) throws ReflectiveOperationException {
+        return read(registryName, placedBlocks, true);
+    }
+
+    /** An empty table throws in AS's uniform selector; an all-invalid table merely exhausts its retries. */
+    public boolean isEmpty(String registryName) throws ReflectiveOperationException {
+        return ((List<?>) entries.get(oreTypes.getField(registryName).get(null))).isEmpty();
+    }
+
+    private OreTable read(String registryName, boolean placedBlocks, boolean uniform) throws ReflectiveOperationException {
         Object registry = oreTypes.getField(registryName).get(null);
         List<?> loaded = new ArrayList<>((List<?>) entries.get(registry));
         Set<String> excluded = new HashSet<>();
@@ -43,8 +57,9 @@ public final class AstralOreTableReader {
             valid[i] = !selected.isEmpty();
             stacks.add(placedBlocks && valid[i] ? placedOutput(selected) : selected);
         }
-        OreProbabilities.Result chances = OreProbabilities.calculate(
-                OreProbabilities.selectionProbabilities(weights, total.getDouble(registry)), valid, 0, 150);
+        OreProbabilities.Result chances = uniform ? OreProbabilities.calculateUniform(valid, 150)
+                : OreProbabilities.calculate(
+                        OreProbabilities.selectionProbabilities(weights, total.getDouble(registry)), valid, 0, 150);
         double[] probabilities = chances.getProbabilities();
         double failed = chances.getNoResultProbability();
         OreTable.Builder outputs = new OreTable.Builder();

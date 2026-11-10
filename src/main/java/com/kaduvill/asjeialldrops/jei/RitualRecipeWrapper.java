@@ -62,8 +62,8 @@ public abstract class RitualRecipeWrapper implements IRecipeWrapper {
         GlStateManager.color(1, 1, 1, 1);
     }
 
-    final int paragraph(Minecraft minecraft, String key, int y, int color) {
-        for (String line : minecraft.fontRenderer.listFormattedStringToWidth(text(key), RitualRecipeCategory.WIDTH - 4)) {
+    final int paragraph(Minecraft minecraft, String key, int y, int color, Object... args) {
+        for (String line : minecraft.fontRenderer.listFormattedStringToWidth(text(key, args), RitualRecipeCategory.WIDTH - 4)) {
             minecraft.fontRenderer.drawString(line, (RitualRecipeCategory.WIDTH
                     - minecraft.fontRenderer.getStringWidth(line)) / 2, y, color);
             y += minecraft.fontRenderer.FONT_HEIGHT + 1;
@@ -71,28 +71,34 @@ public abstract class RitualRecipeWrapper implements IRecipeWrapper {
         return y;
     }
 
-    final int paragraphHeight(String key) {
+    final int paragraphHeight(String key, Object... args) {
         FontRenderer font = Minecraft.getMinecraft().fontRenderer;
-        return font.listFormattedStringToWidth(text(key), RitualRecipeCategory.WIDTH - 4).size()
+        return font.listFormattedStringToWidth(text(key, args), RitualRecipeCategory.WIDTH - 4).size()
                 * (font.FONT_HEIGHT + 1);
     }
 
     List<String> rangeTooltip() {
-        return rangeTooltip(range, rangeBoxSize());
+        return rangeTooltip(range, rangeBoxSize(), showSpeedHint());
     }
+
+    boolean showSpeedHint() { return false; }
 
     double rangeBoxSize() { return range * 2 + 1; }
 
-    static List<String> rangeTooltip(double range, double boxSize) {
+    static List<String> rangeTooltip(double range, double boxSize, boolean showSpeedHint) {
+        String size = number(boxSize);
+        return rangeTooltip(range, text("range_box", size, size, size), showSpeedHint);
+    }
+
+    static List<String> rangeTooltip(double range, String scope, boolean showSpeedHint) {
         List<String> result = new ArrayList<>();
         result.add(text("range", number(range)));
-        String size = number(boxSize);
-        result.add(text("range_box", size, size, size));
-        result.add(text("range_modifiers"));
+        result.add(scope);
+        result.add(text(showSpeedHint ? "range_speed_modifiers" : "range_modifiers"));
         return result;
     }
 
-    private static String number(double value) {
+    static String number(double value) {
         // AS loads fractional ranges as floats; avoid displaying their widened precision.
         return value == (int) value ? Integer.toString((int) value) : Float.toString((float) value);
     }

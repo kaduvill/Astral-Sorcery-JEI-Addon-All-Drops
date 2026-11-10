@@ -1,10 +1,9 @@
 0.4.0
 - Added a Neromantic Prime recipe (Optional Universal Tweaks dimension compatibility)
 - Corrupted Mineralis ritual
-- Pelotrio ritual (+ corrupted )
-- Octans ritual (+ corrupted )
-- Bootes ritual (+ corrupted )
+- Added normal and corrupted Aevitas, Armara, Bootes, Discidia, Evorsio, Fornax, Horologium, Lucerna, Octans, Pelotrio and Vicio
 - Added separate config switches for each corrupted ritual's JEI pages
+- Moved and aligned all range and speed info to animated arrow tooltip
 
 0.3.0
 - Added Liquid Starlight Interactions: infused wood, crystal clusters, growth, repair, splitting, and fluid contact

@@ -174,6 +174,8 @@ final class MobRitualRecipeWrapper extends RitualRecipeWrapper {
         return Collections.emptyList();
     }
 
+    @Override boolean showSpeedHint() { return mode != Mode.HERDING || !corrupted; }
+
     @Override double rangeBoxSize() {
         // Corrupted Pelotrio grows a point box; the other rituals include the pedestal block.
         return mode == Mode.CONVERSION ? range * 2 : super.rangeBoxSize();

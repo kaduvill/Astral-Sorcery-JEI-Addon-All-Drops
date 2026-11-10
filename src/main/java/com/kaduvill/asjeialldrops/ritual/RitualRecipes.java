@@ -6,6 +6,7 @@ import java.util.List;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemMonsterPlacer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ResourceLocation;
 
 /** Read-only registration snapshots; none of these examples create entities or roll loot. */
@@ -72,9 +73,15 @@ public final class RitualRecipes {
 
         public boolean matches(ItemStack candidate) {
             if (candidate.isEmpty() || candidate.getItem() != stack.getItem()) return false;
-            if (stack.isItemStackDamageable()) return true;
-            if (candidate.getMetadata() != stack.getMetadata()) return false;
-            return enchanted || ItemStack.areItemStackTagsEqual(candidate, stack);
+            if (!(damaged && stack.isItemStackDamageable()) && candidate.getMetadata() != stack.getMetadata()) return false;
+            if (!enchanted) return ItemStack.areItemStackTagsEqual(candidate, stack);
+            // Random enchantments may vary; names and other fixed loot-table tags must still match.
+            NBTTagCompound expected = stack.hasTagCompound() ? stack.getTagCompound().copy() : new NBTTagCompound();
+            NBTTagCompound actual = candidate.hasTagCompound() ? candidate.getTagCompound().copy() : new NBTTagCompound();
+            String key = stack.getItem() == Items.ENCHANTED_BOOK ? "StoredEnchantments" : "ench";
+            expected.removeTag(key);
+            actual.removeTag(key);
+            return expected.equals(actual);
         }
     }
 

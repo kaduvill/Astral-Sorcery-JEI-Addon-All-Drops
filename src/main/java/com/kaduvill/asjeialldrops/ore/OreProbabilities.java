@@ -11,6 +11,14 @@ public final strictfp class OreProbabilities {
     private OreProbabilities() {
     }
 
+    /** AS's nonweighted selector makes up to maxAttempts unbiased, independent row draws. */
+    public static Result calculateUniform(boolean[] valid, int maxAttempts) {
+        if (valid == null) throw new IllegalArgumentException("Validity flags are required");
+        double[] probabilities = new double[valid.length];
+        if (valid.length > 0) java.util.Arrays.fill(probabilities, 1.0 / valid.length);
+        return calculate(probabilities, valid, 0, maxAttempts);
+    }
+
     /**
      * Calculates unconditional probabilities per conversion attempt. A false
      * validity flag means that selecting that bin consumes a retry. Probability

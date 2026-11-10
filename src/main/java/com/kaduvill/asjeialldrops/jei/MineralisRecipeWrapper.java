@@ -84,7 +84,7 @@ public final class MineralisRecipeWrapper implements IRecipeWrapper {
         if (layout == null || layout.inputCount == 0
                 || mouseX < MineralisRecipeLayout.ARROW_X || mouseX >= MineralisRecipeLayout.ARROW_X + 17
                 || mouseY < layout.arrowY || mouseY >= layout.arrowY + 24) return Collections.emptyList();
-        return RitualRecipeWrapper.rangeTooltip(searchRange, searchRange * 2 + 1);
+        return RitualRecipeWrapper.rangeTooltip(searchRange, searchRange * 2 + 1, true);
     }
 
     @Override

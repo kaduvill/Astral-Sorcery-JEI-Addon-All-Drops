@@ -38,6 +38,8 @@ final class FishingRecipeWrapper extends RitualRecipeWrapper {
 
     @Override int height() { return layout.height; }
 
+    @Override boolean showSpeedHint() { return true; }
+
     @Override List<List<ItemStack>> outputLists() {
         List<List<ItemStack>> result = new ArrayList<>();
         for (RitualRecipes.FishingDrop drop : drops) result.add(Collections.singletonList(drop.stack()));

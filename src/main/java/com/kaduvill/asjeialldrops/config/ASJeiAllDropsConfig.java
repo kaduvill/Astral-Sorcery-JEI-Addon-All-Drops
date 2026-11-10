@@ -46,6 +46,86 @@ public final class ASJeiAllDropsConfig {
     @Config.RequiresMcRestart
     public static boolean bootesCorrupted = true;
 
+    @Config.Name("Fornax")
+    @Config.Comment("Show the Fornax Ritual category. Client restart required.")
+    @Config.RequiresMcRestart
+    public static boolean fornax = true;
+
+    @Config.Name("FornaxCorrupted")
+    @Config.Comment("Show corrupted pages. Requires Fornax=true; normal pages are unaffected. Client restart required.")
+    @Config.RequiresMcRestart
+    public static boolean fornaxCorrupted = true;
+
+    @Config.Name("Evorsio")
+    @Config.Comment("Show the Evorsio Ritual category. Client restart required.")
+    @Config.RequiresMcRestart
+    public static boolean evorsio = true;
+
+    @Config.Name("EvorsioCorrupted")
+    @Config.Comment("Show corrupted pages. Requires Evorsio=true; normal pages are unaffected. Client restart required.")
+    @Config.RequiresMcRestart
+    public static boolean evorsioCorrupted = true;
+
+    @Config.Name("Aevitas")
+    @Config.Comment("Show the Aevitas Ritual category. Client restart required.")
+    @Config.RequiresMcRestart
+    public static boolean aevitas = true;
+
+    @Config.Name("AevitasCorrupted")
+    @Config.Comment("Show corrupted pages. Requires Aevitas=true; normal pages are unaffected. Client restart required.")
+    @Config.RequiresMcRestart
+    public static boolean aevitasCorrupted = true;
+
+    @Config.Name("Armara")
+    @Config.Comment("Show the Armara Ritual category. Client restart required.")
+    @Config.RequiresMcRestart
+    public static boolean armara = true;
+
+    @Config.Name("ArmaraCorrupted")
+    @Config.Comment("Show corrupted pages. Requires Armara=true; normal pages are unaffected. Client restart required.")
+    @Config.RequiresMcRestart
+    public static boolean armaraCorrupted = true;
+
+    @Config.Name("Discidia")
+    @Config.Comment("Show the Discidia Ritual category. Client restart required.")
+    @Config.RequiresMcRestart
+    public static boolean discidia = true;
+
+    @Config.Name("DiscidiaCorrupted")
+    @Config.Comment("Show corrupted pages. Requires Discidia=true; normal pages are unaffected. Client restart required.")
+    @Config.RequiresMcRestart
+    public static boolean discidiaCorrupted = true;
+
+    @Config.Name("Horologium")
+    @Config.Comment("Show the Horologium Ritual category. Client restart required.")
+    @Config.RequiresMcRestart
+    public static boolean horologium = true;
+
+    @Config.Name("HorologiumCorrupted")
+    @Config.Comment("Show corrupted pages. Requires Horologium=true; normal pages are unaffected. Client restart required.")
+    @Config.RequiresMcRestart
+    public static boolean horologiumCorrupted = true;
+
+    @Config.Name("Lucerna")
+    @Config.Comment("Show the Lucerna Ritual category. Client restart required.")
+    @Config.RequiresMcRestart
+    public static boolean lucerna = true;
+
+    @Config.Name("LucernaCorrupted")
+    @Config.Comment("Show corrupted pages. Requires Lucerna=true; normal pages are unaffected. Client restart required.")
+    @Config.RequiresMcRestart
+    public static boolean lucernaCorrupted = true;
+
+    @Config.Name("Vicio")
+    @Config.Comment("Show the Vicio Ritual category. Client restart required.")
+    @Config.RequiresMcRestart
+    public static boolean vicio = true;
+
+    @Config.Name("VicioCorrupted")
+    @Config.Comment("Show corrupted pages. Requires Vicio=true; normal pages are unaffected. Client restart required.")
+    @Config.RequiresMcRestart
+    public static boolean vicioCorrupted = true;
+
     @Config.Name("ContainmentChalice")
     @Config.Comment("Show the Containment Chalice reactions category. Client restart required.")
     @Config.RequiresMcRestart
